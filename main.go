@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -23,44 +24,52 @@ type Todo struct {
 var collection *mongo.Collection
 
 func main() {
-	fmt.Println("Hello World")
+    fmt.Println("Hello World")
 
-	err := godotenv.Load(".env")
+    err := godotenv.Load(".env")
 
-	if err != nil {
-		log.Fatal("Error loading .env file:", err)
-	}
+    if err != nil {
+        log.Fatal("Error loading .env file:", err)
+    }
 
-	MONGODB_URI := os.Getenv("MONGODB_URI")
-	clientOptions := options.Client().ApplyURI(MONGODB_URI)
-	client, err := mongo.Connect(context.Background(), clientOptions)
+    MONGODB_URI := os.Getenv("MONGODB_URI")
+    clientOptions := options.Client().ApplyURI(MONGODB_URI)
+    client, err := mongo.Connect(context.Background(), clientOptions)
 
-	if err != nil {
-		log.Fatal(err)
-	}
+    if err != nil {
+        log.Fatal(err)
+    }
 
-	defer client.Disconnect(context.Background())
+    defer client.Disconnect(context.Background())
 
-	err = client.Ping(context.Background(), nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+    err = client.Ping(context.Background(), nil)
+    if err != nil {
+        log.Fatal(err)
+    }
 
-	fmt.Println("Connected MongoDB")
+    fmt.Println("Connected MongoDB")
 
-	collection = client.Database("golang_db").Collection("todos")
-	app := fiber.New()
-	app.Get("/api/todos", getTodos)
-	app.Post("/api/todos", createTodo)
-	app.Patch("/api/todos/:id", updateTodo)
-	app.Delete("/api/todos/:id", deleteTodo)
+    collection = client.Database("golang_db").Collection("todos")
+    app := fiber.New()
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "5000"
-	}
+    // Enable CORS middleware with custom configuration
+    app.Use(cors.New(cors.Config{
+        AllowOrigins: "http://localhost:5173", // Your frontend URL here
+        AllowMethods: "GET,POST,PUT,PATCH,DELETE",
+        AllowHeaders: "Origin, Content-Type, Accept",
+    }))
 
-	log.Fatal(app.Listen("0.0.0.0:" + port))
+    app.Get("/api/todos", getTodos)
+    app.Post("/api/todos", createTodo)
+    app.Patch("/api/todos/:id", updateTodo)
+    app.Delete("/api/todos/:id", deleteTodo)
+
+    port := os.Getenv("PORT")
+    if port == "" {
+        port = "5000"
+    }
+
+    log.Fatal(app.Listen("0.0.0.0:" + port))
 }
 
 func getTodos(c *fiber.Ctx) error {
