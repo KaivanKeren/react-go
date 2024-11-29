@@ -57,7 +57,7 @@ const TodoForm: React.FC<TodoFormProps> = ({ onAddTodo }) => {
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 placeholder="What needs to be done?"
-                className="bg-transparent border-2 h-12 px-4 transition-all duration-200 
+                className="bg-transparent border-2 h-12 px-4 rounded-md transition-all duration-200 
                          focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
                          hover:border-blue-400 dark:hover:border-blue-400
                          dark:bg-gray-800/50 dark:text-white"
@@ -86,7 +86,7 @@ const TodoForm: React.FC<TodoFormProps> = ({ onAddTodo }) => {
             <Button 
               type="submit" 
               disabled={isSubmitting}
-              className="h-12 px-6 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 
+              className="h-12 px-6 text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 
                        dark:hover:bg-blue-600 transition-colors duration-200
                        disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
             >

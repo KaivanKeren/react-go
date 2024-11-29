@@ -13,28 +13,48 @@ const Home = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
 
   const fetchTodos = async () => {
-    const response = await axios.get(API_URL);
-    setTodos(response.data);
+    try {
+      const response = await axios.get(API_URL);
+      setTodos(response.data || []);
+    } catch (error) {
+      console.error("Error fetching todos:", error);
+    }
   };
 
   const addTodo = async (body: string) => {
-    const response = await axios.post(API_URL, { body, completed: false });
-    setTodos((prev) => [...prev, response.data]);
+    try {
+      const response = await axios.post(API_URL, { body, completed: false });
+      setTodos((prev) => [...prev, response.data]);
+    } catch (error) {
+      console.error("Error adding todo:", error);
+    }
   };
 
   const toggleTodo = async (id: string) => {
-    await axios.patch(`${API_URL}/${id}`);
-    fetchTodos();
+    try {
+      await axios.patch(`${API_URL}/${id}`);
+      fetchTodos();
+    } catch (error) {
+      console.error("Error toggling todo:", error);
+    }
   };
 
   const deleteTodo = async (id: string) => {
-    await axios.delete(`${API_URL}/${id}`);
-    setTodos((prev) => prev.filter((todo) => todo._id !== id));
+    try {
+      await axios.delete(`${API_URL}/${id}`);
+      setTodos((prev) => prev.filter((todo) => todo._id !== id));
+    } catch (error) {
+      console.error("Error deleting todo:", error);
+    }
   };
 
   useEffect(() => {
     fetchTodos();
   }, []);
+
+  const completedCount = todos?.filter((todo) => todo.completed).length || 0;
+  const totalCount = todos?.length || 0;
+  const progressWidth = (completedCount / Math.max(totalCount, 1)) * 100;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 
@@ -77,15 +97,13 @@ const Home = () => {
                   Tasks completed
                 </span>
                 <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                  {todos.filter(todo => todo.completed).length}/{todos.length}
+                  {completedCount}/{totalCount}
                 </span>
               </div>
               <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
                 <motion.div
                   initial={{ width: "0%" }}
-                  animate={{
-                    width: `${(todos.filter(todo => todo.completed).length / Math.max(todos.length, 1)) * 100}%`
-                  }}
+                  animate={{ width: `${progressWidth}%` }}
                   transition={{ duration: 0.5 }}
                   className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 
                            rounded-full"
@@ -104,7 +122,7 @@ const Home = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
-              {todos.length === 0 ? (
+              {totalCount === 0 ? (
                 <div className="text-center py-12">
                   <div className="inline-flex items-center justify-center w-12 h-12 
                                 rounded-full bg-blue-100 dark:bg-blue-900/30 mb-4">
@@ -127,12 +145,12 @@ const Home = () => {
             </motion.div>
 
             {/* Footer Stats */}
-            {todos.length > 0 && (
+            {totalCount > 0 && (
               <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                 <div className="grid grid-cols-2 gap-4 text-center">
                   <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20">
                     <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                      {todos.filter(todo => !todo.completed).length}
+                      {todos.filter((todo) => !todo.completed).length}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                       Pending Tasks
@@ -140,7 +158,7 @@ const Home = () => {
                   </div>
                   <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20">
                     <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                      {todos.filter(todo => todo.completed).length}
+                      {completedCount}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                       Completed Tasks
